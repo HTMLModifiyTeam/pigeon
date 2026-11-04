@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+    <title>비둘기 게임</title>
+    <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.module.js"}}</script>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+
+  <body>
+    <div id="app"></div>
+    </div>
+    </div>
+    <div id="report"><button id="reportBtn">신고하기</button>
+      <div id="reportStem"></div>
+    </div>
+    <div id="controls">
+      <div id="stickZone"></div>
+      <div id="stick">
+        <div id="knob"></div>
+      </div>
+      <div id="cooBtn">
+        <svg viewBox="0 0 30 24">
+          <path d="M4 22 C4 15 6 12.5 9.5 12 L13.5 12 C15 14.5 14 19 12 22 Z" fill="#2E5B45" />
+          <circle cx="11.2" cy="9.4" r="5.4" fill="#2E5B45" />
+          <path d="M16.2 8.6 L22 10.4 L16.2 12 Z" fill="#2E5B45" />
+          <circle cx="12.6" cy="8.2" r="1" fill="#FFFFFF" />
+          <path d="M23.5 6.2 q3 4.2 0 8.4" stroke="#2E5B45" stroke-width="1.7" fill="none" stroke-linecap="round" />
+          <path d="M26.3 4 q4.6 6.4 0 12.8" stroke="#2E5B45" stroke-width="1.7" fill="none" stroke-linecap="round" />
+        </svg>
+      </div>
+      <button id="laserBtn" aria-label="Fire laser" title="Fire laser">
+        <svg viewBox="0 0 48 32" aria-hidden="true">
+          <path d="M4 12h23l7-5h6v18h-6l-7-5H4z" fill="#30443b" />
+          <path d="M9 20h10l2 8h-8z" fill="#30443b" />
+          <path d="M39 16h8" stroke="#fb4262" stroke-width="3" stroke-linecap="round" />
+        </svg>
+        <span>LASER</span>
+      </button>
+      <div id="flapBtn">
+        <svg viewBox="0 0 64 64" fill="#2E5B45">
+          <path d="M32 9c-2.6 0-4.4 2.2-4.4 5v7.6C21 17.4 11.4 17.2 4 21.6c7.2.3 14.2 3.6 19.8 8.9v10.2c0 3.2 3.4 6.4 8.2 6.4s8.2-3.2 8.2-6.4V30.5C45.8 25.2 52.8 21.9 60 21.6c-7.4-4.4-17-4.2-23.6.0V14c0-2.8-1.8-5-4.4-5z" />
+          <path d="M32 47.1c-1.5 0-3.9 4.2-3.9 6.5 0 .9.6 1.4 1.4 1.4h5c.8 0 1.4-.5 1.4-1.4 0-2.3-2.4-6.5-3.9-6.5z" />
+        </svg>
+      </div>
+    </div>
+    <div id="dev"></div>
+
+    <div id="title">
+      <div id="notice">
+        <div id="noticeBar"></div>
+        <div id="noticeIn">
+          <h1>비둘기 게임</h1>
+          <hr>
+          <div class="keys">
+            <b>날기</b>스페이스 / 오른쪽 버튼<br>
+            <b>방향</b>WASD · 방향키 / 왼쪽 스틱<br>
+            <b>레이저</b>클릭 / LASER 버튼
+          </div>
+          <button id="startBtn">시작</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="game.js"></script>
+  </body>
+</html>

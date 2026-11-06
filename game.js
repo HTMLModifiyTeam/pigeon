@@ -110,7 +110,7 @@ function asphaltTexture() {
   return t;
 }
 
-function facadeTexture(baseHex, seed) {
+function facadeTexture(baseHex) {
   const S = 512;
   const [c, ctx] = makeCanvas(S, S);
   const base = new THREE.Color(baseHex);
@@ -149,7 +149,7 @@ function facadeTexture(baseHex, seed) {
 }
 
 /* 하늘 그라디언트 큐브맵 — 유리 반사용 */
-function skyEnvMap(renderer) {
+function skyEnvMap() {
   const faces = [];
   for (let i = 0; i < 6; i++) {
     const [c, ctx] = makeCanvas(128, 128);
@@ -181,7 +181,7 @@ const PLAZA = { w: 78, d: 54 };
 const ROAD_Z = 34;      // 도로 중심 z
 const ROAD_W = 13;
 
-function buildWorld(scene, renderer) {
+function buildWorld(scene) {
   const W = {
     perches: [],        // {pos:Vector3, hard:0..1, kind:'wire'|'lamp'|'sign'|'ledge'|'bench'|'ac'}
     glass: [],          // {box:Box3, normal:Vector3, mesh}
@@ -194,7 +194,7 @@ function buildWorld(scene, renderer) {
     stainGroup: null
   };
 
-  const env = skyEnvMap(renderer);
+  const env = skyEnvMap();
   scene.environment = env;
 
   /* ---------- 하늘 ---------- */
@@ -215,10 +215,9 @@ function buildWorld(scene, renderer) {
   scene.add(new THREE.Mesh(skyGeo, skyMat));
 
   /* ---------- 조명 ---------- */
-  const hemi = new THREE.HemisphereLight(0xBFDCF2, 0x6B6252, 0.34);
-  scene.add(hemi);
+  scene.add(new THREE.HemisphereLight(0xBFDCF2, 0x6B6252, 0.34 * Math.PI));
 
-  const sun = new THREE.DirectionalLight(PAL.sun, 1.25);
+  const sun = new THREE.DirectionalLight(PAL.sun, 1.25 * Math.PI);
   sun.position.set(38, 52, 24);
   sun.castShadow = true;
   sun.shadow.mapSize.set(2048, 2048);
@@ -228,7 +227,7 @@ function buildWorld(scene, renderer) {
   sun.shadow.bias = -0.0009;
   sun.shadow.normalBias = 0.02;
   scene.add(sun);
-  scene.add(new THREE.AmbientLight(0xA8BED0, 0.09));
+  scene.add(new THREE.AmbientLight(0xA8BED0, 0.09 * Math.PI));
 
   scene.fog = new THREE.Fog(0xC6D9E6, 90, 330);
 
@@ -297,7 +296,7 @@ function buildWorld(scene, renderer) {
 
   function addBuilding(cx, cz, w, d, h, faceHex, facing) {
     const g = new THREE.Group();
-    const tex = facadeTexture(faceHex, cx);
+    const tex = facadeTexture(faceHex);
     tex.repeat.set(Math.max(1, w / 6), Math.max(1, h / 6));
     const body = new THREE.Mesh(
       new THREE.BoxGeometry(w, h, d),
@@ -1374,30 +1373,12 @@ const FLY = {
   takeoffUp: 4.2
 };
 
-function buildPigeonLaser() {
-  const gun = new THREE.Group();
-  const casing = new THREE.MeshStandardMaterial({ color: 0x30343C, roughness: 0.42, metalness: 0.62 });
-  const trim = new THREE.MeshStandardMaterial({ color: 0xA6D9E8, emissive: 0x1E7993, emissiveIntensity: 1.2, metalness: 0.35 });
-  const body = new THREE.Mesh(new THREE.BoxGeometry(0.052, 0.034, 0.115), casing);
-  body.position.z = 0.005; gun.add(body);
-  const grip = new THREE.Mesh(new THREE.BoxGeometry(0.025, 0.052, 0.035), casing);
-  grip.position.set(0, -0.038, -0.027); grip.rotation.x = -0.18; gun.add(grip);
-  const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.017, 0.021, 0.048, 10), trim);
-  barrel.rotation.x = Math.PI / 2; barrel.position.z = 0.078; gun.add(barrel);
-  const muzzle = new THREE.Mesh(new THREE.SphereGeometry(0.014, 8, 6), new THREE.MeshBasicMaterial({ color: 0xFF4B70 }));
-  muzzle.position.z = 0.105; gun.add(muzzle);
-  gun.position.set(0.098, -0.018, 0.018);
-  return gun;
-}
-
 class Pigeon {
   constructor(scene) {
     this.model = buildPigeon();
-    this.model.laserGun = buildPigeonLaser();
-    this.model.tilt.add(this.model.laserGun);
     scene.add(this.model.root);
     this.pos = new THREE.Vector3(0, 16, 14);
-    this.vel = new THREE.Vector3(0, 0, -7);
+    this.vel = new THREE.Vector3(0, 0, -7); 
     this.yaw = Math.PI;
     this.pitch = -0.18;
     this.roll = 0;
@@ -2192,12 +2173,12 @@ function updateFlock(dt) {
    ============================================================ */
 function init() {
   THREE.ColorManagement.enabled = true;
-  renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance' });
+  renderer = new THREE.WebGLRenderer();
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.setSize(innerWidth, innerHeight);
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFShadowMap;
-  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 0.74;
   document.getElementById('app').appendChild(renderer.domElement);
@@ -2205,7 +2186,7 @@ function init() {
   scene = new THREE.Scene();
   camera = new THREE.PerspectiveCamera(62, innerWidth / innerHeight, 0.05, 700);
 
-  W = buildWorld(scene, renderer);
+  W = buildWorld(scene);
   spawnPeople();
   spawnNests();
   spawnFlock();

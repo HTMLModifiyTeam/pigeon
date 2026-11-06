@@ -1,29 +1,9 @@
 import * as THREE from 'three';
+import { PAL, FLOCK_PERCH_KINDS, FOLD_UP, FOLD_LO } from "./classes/data.js"
 
 /* ============================================================
    WORLD — 밝은 하늘 / 칙칙한 도시
    ============================================================ */
-
-const PAL = {
-  skyTop:    0x5FA6DE,
-  skyHaze:   0xCFE2EF,
-  sun:       0xFFF6E2,
-  ground:    0xB4AC9B,
-  groundDim: 0x9C947F,
-  road:      0x4A4742,
-  curb:      0xB0A897,
-  facadeA:   0x7B7060,
-  facadeB:   0x655C4F,
-  facadeC:   0x877860,
-  rust:      0x8C5A3C,
-  signBlue:  0x3E6B84,
-  signRed:   0xA5432F,
-  signYellow:0xC9A227,
-  metal:     0x6E6A63,
-  darkMetal: 0x3A3733,
-  wood:      0x6B5641,
-  glassTint: 0x8FB6CE
-};
 
 /* ---------- 절차적 텍스처 ---------- */
 function makeCanvas(w, h) {
@@ -75,7 +55,7 @@ function concreteTexture() {
   const t = new THREE.CanvasTexture(c);
   t.wrapS = t.wrapT = THREE.RepeatWrapping;
   t.anisotropy = 8;
-  t.encoding = THREE.sRGBEncoding;
+  t.colorSpace = THREE.SRGBColorSpace;
   return t;
 }
 
@@ -106,7 +86,7 @@ function asphaltTexture() {
   const t = new THREE.CanvasTexture(c);
   t.wrapS = t.wrapT = THREE.RepeatWrapping;
   t.anisotropy = 8;
-  t.encoding = THREE.sRGBEncoding;
+  t.colorSpace = THREE.SRGBColorSpace;
   return t;
 }
 
@@ -144,7 +124,7 @@ function facadeTexture(baseHex) {
   const t = new THREE.CanvasTexture(c);
   t.wrapS = t.wrapT = THREE.RepeatWrapping;
   t.anisotropy = 8;
-  t.encoding = THREE.sRGBEncoding;
+  t.colorSpace = THREE.SRGBColorSpace;
   return t;
 }
 
@@ -168,7 +148,7 @@ function skyEnvMap() {
     faces.push(c);
   }
   const cube = new THREE.CubeTexture(faces);
-  cube.encoding = THREE.sRGBEncoding;
+  cube.colorSpace = THREE.SRGBColorSpace;
   cube.needsUpdate = true;
   return cube;
 }
@@ -369,7 +349,6 @@ function buildWorld(scene) {
     cornice.castShadow = true; cornice.receiveShadow = true;
     g.add(cornice);
     W.platforms.push(new THREE.Box3().setFromCenterAndSize(new THREE.Vector3(cx, h - 0.25, cz), new THREE.Vector3(w + 0.7, 0.5, d + 0.7)));
-
 
     // 실외기
     const acMat = new THREE.MeshStandardMaterial({ color: 0x9A968C, roughness: 0.75, metalness: 0.35 });
@@ -695,7 +674,6 @@ function buildWorld(scene) {
   /* ---------- 자국 레이어 ---------- */
   W.stainGroup = new THREE.Group();
   scene.add(W.stainGroup);
-
   return W;
 }
 
@@ -768,7 +746,7 @@ function bannerTexture(kind) {
     ctx.fillText('비둘기가 스스로 먹이를 찾아 생태계의 당당한 일원이 될 수 있도록 도와주세요', 52, 222);
   }
   const t = new THREE.CanvasTexture(c);
-  t.encoding = THREE.sRGBEncoding;
+  t.colorSpace = THREE.SRGBColorSpace;
   t.anisotropy = 8;
   return t;
 }
@@ -854,7 +832,7 @@ function stainTexture(kind) {
 
 const STAIN_TEX = {};
 function addStain(W, x, z, kind, age) {
-  if (!STAIN_TEX[kind]) { STAIN_TEX[kind] = stainTexture(kind); STAIN_TEX[kind].encoding = THREE.sRGBEncoding; }
+  if (!STAIN_TEX[kind]) { STAIN_TEX[kind] = stainTexture(kind); STAIN_TEX[kind].colorSpace = THREE.SRGBColorSpace; }
   const size = kind === 'flat' ? 1.5 : 1.1;
   const fade = Math.max(0.12, 1 - age * 0.16);
   const m = new THREE.Mesh(
@@ -925,7 +903,7 @@ function wingTexture() {
   ctx.fillStyle = te; ctx.fillRect(0, 0, 256, 128);
 
   WING_TEX = new THREE.CanvasTexture(c);
-  WING_TEX.encoding = THREE.sRGBEncoding;
+  WING_TEX.colorSpace = THREE.SRGBColorSpace;
   return WING_TEX;
 }
 
@@ -946,7 +924,7 @@ function tailTexture() {
     ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 128); ctx.stroke();
   }
   TAIL_TEX = new THREE.CanvasTexture(c);
-  TAIL_TEX.encoding = THREE.sRGBEncoding;
+  TAIL_TEX.colorSpace = THREE.SRGBColorSpace;
   return TAIL_TEX;
 }
 
@@ -1026,20 +1004,6 @@ function wingGeometry(side) {
 
 
 /* 접힌 날개 — 옆구리에 붙는 별도 패널 (같은 텍스처 재사용: 앞쪽에 검은 띠, 뒤쪽이 어두움) */
-const FOLD_UP = [
-  [0.018,  0.062,  0.078],
-  [0.036,  0.060,  0.020],
-  [0.044,  0.050, -0.052],
-  [0.040,  0.030, -0.124],
-  [0.028,  0.012, -0.190]
-];
-const FOLD_LO = [
-  [0.030, -0.010,  0.060],
-  [0.056, -0.026,  0.008],
-  [0.062, -0.038, -0.058],
-  [0.053, -0.040, -0.122],
-  [0.035, -0.030, -0.180]
-];
 function foldedWingMesh(side) {
   const n = FOLD_UP.length, pos = [], uvs = [], idx = [];
   for (let i = 0; i < n; i++) {
@@ -1292,7 +1256,7 @@ function medalFaceTexture(i) {
     ctx.lineTo(58, 104); ctx.lineTo(58, 80); ctx.lineTo(48, 80); ctx.closePath(); ctx.fill();
     ctx.fillRect(40, 50, 9, 28); ctx.fillRect(79, 50, 9, 28);
   }
-  const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; return t;
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
 }
 function ribbonTexture(i) {
   const sp = BADGE_SPEC[i];
@@ -1303,7 +1267,7 @@ function ribbonTexture(i) {
   // 천 결
   ctx.fillStyle = 'rgba(0,0,0,0.10)';
   for (let y = 0; y < 48; y += 3) ctx.fillRect(0, y, 48, 1);
-  const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; return t;
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
 }
 const MEDAL_TEX = {};
 function addBadge(bird, index) {
@@ -1683,7 +1647,8 @@ class Pigeon {
    MAIN
    ============================================================ */
 
-let renderer, scene, camera, W, bird, timer;
+let renderer, scene, camera, W, bird
+let timer = new THREE.Timer();
 let people = [], crumbs = [], flock = [];
 let badges = 0;
 let stringT = 0, started = false;
@@ -1951,7 +1916,6 @@ function spawnNests() {
 }
 
 /* ---------- 다른 비둘기 ---------- */
-const FLOCK_PERCH_KINDS = new Set(['ledge', 'awning', 'ac', 'sign', 'banner', 'lamp', 'bench', 'stall', 'tree', 'bin', 'wire']);
 function flockPerches() { return W.perches.filter(p => FLOCK_PERCH_KINDS.has(p.kind)); }
 function spawnFlock() {
   const pl = flockPerches();
@@ -2177,8 +2141,6 @@ function init() {
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.setSize(innerWidth, innerHeight);
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFShadowMap;
-  renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 0.74;
   document.getElementById('app').appendChild(renderer.domElement);
@@ -2199,7 +2161,6 @@ function init() {
     if (s.k !== 'bag') addStain(W, s.x, s.z, s.k, age);
   });
 
-  timer = new THREE.Timer();
   bindInput();
   addEventListener('resize', onResize);
   animate();
@@ -2773,7 +2734,7 @@ function markGlass(g, u, v) {
     ctx.quadraticCurveTo(32 + s * 20, 16, 32 + s * 27, 30);
     ctx.quadraticCurveTo(32 + s * 18, 32, 32, 36); ctx.fill();
   });
-  const tex = new THREE.CanvasTexture(c); tex.encoding = THREE.sRGBEncoding;
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
   const m = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.9),
     new THREE.MeshBasicMaterial({ map: tex, transparent: true, opacity: 0.7, depthWrite: false }));
   m.position.copy(g.pos).addScaledVector(g.normal, 0.02);
